@@ -1,0 +1,38 @@
+From 4440f0cd521c94c06e46ca92506c9aa09287ab88 Mon Sep 17 00:00:00 2001
+From: Jason Hung <jhung@globalscaletechnologies.com>
+Date: Tue, 28 Nov 2017 08:51:12 +0800
+Subject: [PATCH 1/8] dts: espressobin: add emmc support
+
+enable emmc(sdhci0) support
+---
+ arch/arm64/boot/dts/marvell/armada-3720-community.dts | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/marvell/armada-3720-community.dts b/arch/arm64/boot/dts/marvell/armada-3720-community.dts
+index 992c4c9..eed1e2c 100644
+--- a/arch/arm64/boot/dts/marvell/armada-3720-community.dts
++++ b/arch/arm64/boot/dts/marvell/armada-3720-community.dts
+@@ -146,6 +146,20 @@
+ 				status = "okay";
+ 			};
+ 
++			sdhci0: sdhci@d8000 {
++				marvell,pad-type = "fixed-1-8v";
++				non-removable;
++				bus-width = <8>;
++				mmc-ddr-1_8v;
++				mmc-hs400-1_8v;
++				marvell,xenon-emmc;
++				marvell,xenon-tun-count = <9>;
++				status = "okay";
++
++				pinctrl-names = "default";
++				pinctrl-0 = <&mmc_pins>;
++			};
++
+ 			sdhci1: sdhci@d0000 {
+ 				wp-inverted;
+ 				bus-width = <4>;
+-- 
+1.9.1
+
