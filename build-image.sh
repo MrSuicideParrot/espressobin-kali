@@ -228,14 +228,11 @@ EOF
 # Uncomment this if you use apt-cacher-ng or else git clones will fail.
 #unset http_proxy
 
-# Need to patch the kernel to support newer gcc, but that'll happen after 2018.3
-cd "${basedir}"
-git clone https://github.com/offensive-security/gcc-arm-linux-gnueabihf-4.7
 
+cd "${basedir}"
 # Get, compile and install kernel
-git clone https://github.com/MarvellEmbeddedProcessors/linux-marvell "${basedir}"/kali-${architecture}/usr/src/kernel
+git clone --depth 1 git@github.com:MrSuicideParrot/linux-marvell.git -b espressobin-v7 "${basedir}"/kali-${architecture}/usr/src/kernel
 cd "${basedir}"/kali-${architecture}/usr/src/kernel
-git checkout 6adee55d3e07e3cc99ec6248719aac042e58c5e6 -b espressobin-v7
 
 git am  "${basedir}"/../patches/*.patch
 
