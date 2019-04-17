@@ -237,7 +237,7 @@ cd "${basedir}"/kali-${architecture}/usr/src/kernel
 git am  "${basedir}"/../patches/*.patch
 
 export ARCH=arm64
-export CROSS_COMPILE="${basedir}"/aarch64-linux-gnu-
+export CROSS_COMPILE=aarch64-linux-gnu-
 
 make mvebu_v8_lsp_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
