@@ -241,6 +241,7 @@ export CROSS_COMPILE=aarch64-linux-gnu-
 
 make mvebu_v8_lsp_defconfig
 make -j $(grep -c processor /proc/cpuinfo)
+make modules_install INSTALL_MOD_PATH="${basedir}"/kali-${architecture}
 
 cp arch/arm64/boot/Image "${basedir}"/kali-${architecture}/boot/
 cp arch/arm64/boot/dts/marvell/armada-3720-community.dtb  "${basedir}"/kali-${architecture}/boot/
