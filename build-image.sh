@@ -18,7 +18,7 @@ hostname=${2:-kali}
 # Custom image file name variable - MUST NOT include .img at the end.
 imagename=${3:-kali-linux-$1-espressobin}
 # Size of image in megabytes (Default is 7000=7GB)
-size=7000
+size=3000
 # Suite to use.
 # Valid options are:
 # kali-rolling, kali-dev, kali-bleeding-edge, kali-dev-only, kali-experimental, kali-last-snapshot
@@ -95,7 +95,18 @@ auto lo
 iface lo inet loopback
 
 auto eth0
-iface eth0 inet dhcp
+allow-hotplug eth0
+
+auto lan0
+allow-hotplug lan0
+
+auto lan1
+allow-hotplug lan1
+
+auto wan
+allow-hotplug wan
+iface wan dhcp
+
 EOF
 
 cat << EOF > kali-${architecture}/etc/resolv.conf
@@ -247,6 +258,8 @@ make -j $(grep -c processor /proc/cpuinfo)
 
 cp arch/arm64/boot/Image "${basedir}"/kali-${architecture}/boot/
 cp arch/arm64/boot/dts/marvell/armada-3720-community.dtb  "${basedir}"/kali-${architecture}/boot/
+make mrproper
+rm -rf .git
 cd "${basedir}"
 
 cat << EOF > "${basedir}"/kali-${architecture}/etc/fstab
@@ -267,6 +280,18 @@ rm source
 ln -s /usr/src/kernel build
 ln -s /usr/src/kernel source
 cd "${basedir}"
+
+# Create boot.txt file
+cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.txt
+echo "== Executing \${directory}\${bootscript} on \${device_name} partition \${partition} =="
+setenv image_name Image
+setenv fdt_name armada-3720-community.dtb
+setenv bootcmd 'mmc dev 0; ext4load mmc 0:1 $kernel_addr $image_name;ext4load mmc 0:1 $fdt_addr $fdt_name;setenv bootargs $console root=/dev/mmcblk0p1 rw rootwait; booti $kernel_addr - $fdt_addr'
+EOF
+
+# Create u-boot boot script image
+mkimage -A arm64 -T script -C none -d "${basedir}"/kali-${architecture}/boot/boot.txt "${basedir}"/kali-${architecture}/boot/boot.scr
+
 
 sed -i -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' "${basedir}"/kali-${architecture}/etc/ssh/sshd_config
 
