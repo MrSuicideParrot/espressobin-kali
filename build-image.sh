@@ -284,7 +284,8 @@ cat << EOF > "${basedir}"/kali-${architecture}/boot/boot.txt
 echo "== Executing \${directory}\${bootscript} on \${device_name} partition \${partition} =="
 setenv image_name Image
 setenv fdt_name armada-3720-community.dtb
-setenv bootcmd 'mmc dev 0; ext4load mmc 0:1 $kernel_addr $image_name;ext4load mmc 0:1 $fdt_addr $fdt_name;setenv bootargs $console root=/dev/mmcblk0p1 rw rootwait; booti $kernel_addr - $fdt_addr'
+setenv bootcmd 'mmc dev 0; ext4load mmc 0:1 $kernel_addr $image_name;ext4load mmc 0:1 $fdt_addr $fdt_name;setenv bootargs $console root=/dev/mmcblk0p2 rw rootwait; booti $kernel_addr - $fdt_addr'
+run bootcmd
 EOF
 
 # Create u-boot boot script image
