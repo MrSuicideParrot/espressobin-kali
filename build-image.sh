@@ -310,7 +310,7 @@ bootp=${device}p1
 rootp=${device}p2
 
 # Create file systems
-mkfs.vfat -F 16 ${bootp}
+mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${bootp}
 mkfs.ext4 -O ^64bit -O ^flex_bg -O ^metadata_csum ${rootp}
 
 # Create the dirs for the partitions and mount them
