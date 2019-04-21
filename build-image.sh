@@ -95,17 +95,16 @@ auto lo
 iface lo inet loopback
 
 auto eth0
-allow-hotplug eth0
+iface eth0 inet manual
 
 auto lan0
-allow-hotplug lan0
+iface lan0 inet manual
 
 auto lan1
-allow-hotplug lan1
+iface lan1 inet manual
 
 auto wan
-allow-hotplug wan
-iface wan dhcp
+iface wan inet dhcp
 
 EOF
 
