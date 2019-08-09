@@ -166,6 +166,18 @@ ln -sf  uInitrd-\$1 /boot/uInitrd > /dev/null 2>&1
 EOF
 chmod 755 kali-${architecture}/etc/initramfs/post-update.d/99-uInitrd
 
+#Adding fsck to initramfs
+mkdir -p kali-${architecture}/etc/initramfs-tools/hooks
+cat << EOF > kali-${architecture}/etc/initramfs-tools/hooks/e2fsck.sh
+#!/bin/sh
+. /usr/share/initramfs-tools/hook-functions
+copy_exec /sbin/e2fsck /sbin
+copy_exec /sbin/fsck /sbin
+copy_exec /sbin/fsck.ext2 /sbin
+copy_exec /sbin/fsck.ext4 /sbin
+copy_exec /sbin/logsave /sbin
+EOF
+chmod 755 kali-${architecture}/etc/initramfs-tools/hooks/e2fsck.sh
 
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
