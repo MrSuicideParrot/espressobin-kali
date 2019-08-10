@@ -99,13 +99,15 @@ iface eth0 inet manual
 
 allow-hotplug lan0
 iface lan0 inet manual
+    pre-up /usr/local/bin/set_hw_addr.sh \$IFACE
 
 allow-hotplug lan1
 iface lan1 inet manual
+    pre-up /usr/local/bin/set_hw_addr.sh \$IFACE
 
 allow-hotplug wan
 iface wan inet dhcp
-
+    pre-up /usr/local/bin/set_hw_addr.sh \$IFACE
 EOF
 
 cat << EOF > kali-${architecture}/etc/resolv.conf
@@ -178,6 +180,48 @@ copy_exec /sbin/fsck.ext4 /sbin
 copy_exec /sbin/logsave /sbin
 EOF
 chmod 755 kali-${architecture}/etc/initramfs-tools/hooks/e2fsck.sh
+
+#Mac address setting script
+cat <<EOF > kali-${architecture}/usr/local/bin/set_hw_addr.sh
+#!/bin/bash
+
+set_hwaddress (){
+    ip link set \$1 address \$2
+}
+
+. /boot/armbianEnv.txt
+
+iface=\$1
+
+case \$iface in
+    lan0)
+        if [ -z \${eth2addr+x} ]
+        then
+            set_hwaddress \$iface 00:50:43:84:25:2f
+        else
+            set_hwaddress \$iface \$eth2addr
+        fi
+        ;;
+
+    lan1)
+        if [ -z \${eth3addr+x} ]
+        then
+            set_hwaddress \$iface 00:50:43:0d:19:18
+        else
+            set_hwaddress \$iface \$eth3addr
+        fi
+        ;;
+    wan)
+        if [ -z \${eth1addr+x} ]
+        then
+            set_hwaddress \$iface 02:31:5D:99:70:15
+        else
+            set_hwaddress \$iface \$eth1addr
+        fi
+        ;;
+esac
+EOF
+chmod 755 kali-${architecture}/usr/local/bin/set_hw_addr.sh
 
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
