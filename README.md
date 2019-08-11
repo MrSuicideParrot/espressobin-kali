@@ -35,7 +35,7 @@ If you want to connect to the board by ssh, you need to use the *wan* interface 
 
 ## Limitations
 
-Great parts of the limitations of this board is the Topaz Networking Switch. The driver offloads the packets for the physical switch if you enable a bridge between two ports. Because of this, you are unable to intercept packages.  
+Great parts of the limitations of this board is the Topaz Networking Switch. The driver offloads the packets for the physical switch if you enable a bridge between two ports. Because of this, you are unable to intercept packets.  
 
 I also try to bypass this situation creating a bridge for each interface and connected them with a veth, but I didn't succeed either.
 
