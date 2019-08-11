@@ -156,6 +156,20 @@ WantedBy=multi-user.target
 EOF
 chmod 644 kali-${architecture}/usr/lib/systemd/system/smi-hack.service
 
+cat << EOF > "${basedir}"/kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+[Unit]
+Description=Resize filesystem
+After=regenerate_ssh_host_keys.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rpi-wiggle.sh
+ExecStartPost=/bin/systemctl disable rpiwiggle
+
+[Install]
+WantedBy=multi-user.target
+EOF
+chmod 644 "${basedir}"/kali-${architecture}/usr/lib/systemd/system/rpiwiggle.service
+
 mkdir -p kali-${architecture}/etc/initramfs/post-update.d
 cat << EOF > kali-${architecture}/etc/initramfs/post-update.d/99-uInitrd
 #!/bin/sh
@@ -180,6 +194,12 @@ copy_exec /sbin/fsck.ext4 /sbin
 copy_exec /sbin/logsave /sbin
 EOF
 chmod 755 kali-${architecture}/etc/initramfs-tools/hooks/e2fsck.sh
+
+# Disable resume partition to improve boot time
+mkdir -p kali-${architecture}/etc/initramfs-tools/conf.d
+cat << EOF > kali-${architecture}/etc/initramfs-tools/conf.d/resume
+RESUME=none
+EOF
 
 #Mac address setting script
 cat <<EOF > kali-${architecture}/usr/local/bin/set_hw_addr.sh
@@ -223,6 +243,46 @@ esac
 EOF
 chmod 755 kali-${architecture}/usr/local/bin/set_hw_addr.sh
 
+cat << EOF > kali-${architecture}/usr/local/bin/rpi-wiggle.sh
+#!/bin/bash
+# Inspired on https://raw.githubusercontent.com/steev/rpiwiggle/master/rpi-wiggle
+. /boot/armbianEnv.txt
+
+UUID=\${rootdev:5}
+
+disk_part=\$(blkid -U \${UUID})
+disk=\${disk_part::-2}
+
+WIGGLE_ROOM=1536
+DISK_SIZE="\$(( \$(blockdev --getsz \$disk)/2048/925 ))"
+PART_START="\$(parted \$disk -ms unit s p | grep "^\${disk_part:13}" | cut -f2 -d: | sed 's/[^0-9]*//g')"
+PART_END="\$(( (DISK_SIZE * 925 * 2048 - 1) - WIGGLE_ROOM ))"
+
+# Exit if partition start not found
+[ "\$PART_START" ] || exit 1
+echo ======================================================
+echo Current Disk Info
+fdisk -l \${disk}
+echo
+echo ======================================================
+echo
+echo Calculated Info:
+echo " Disk Size  = \$DISK_SIZE gb"
+echo " Part Start = \$PART_START"
+echo " Part End   = \$PART_END"
+echo
+echo "Making changes using fdisk..."
+printf "d\n\${disk_part:13}\nn\np\n\${disk_part:13}\n\$PART_START\n\$PART_END\np\nw\n" | fdisk \$disk
+echo
+partprobe \$disk
+resize2fs \$disk_part
+
+
+echo #####################################################################
+sync
+EOF
+chmod 755 kali-${architecture}/usr/local/bin/rpi-wiggle.sh
+
 cat << EOF > kali-${architecture}/third-stage
 #!/bin/bash
 set -e
@@ -265,6 +325,7 @@ systemctl enable smi-hack
 # Generate SSH host keys on first run
 systemctl enable regenerate_ssh_host_keys
 systemctl enable ssh
+systemctl enable rpiwiggle
 # Copy bashrc
 cp  /etc/skel/.bashrc /root/.bashrc
 rm -f /usr/sbin/policy-rc.d
